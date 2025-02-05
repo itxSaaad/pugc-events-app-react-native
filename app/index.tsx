@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import React from 'react';
 import {
   FlatList,
   Image,
@@ -8,10 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedFAB } from 'react-native-paper';
+
+import withAuth from '@/components/withAuth';
 
 import { Event, events } from '@/data/events';
 
-export default function Index() {
+function Index() {
   const router = useRouter();
 
   const renderEventCard = ({ item }: { item: Event }) => (
@@ -46,17 +50,18 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Upcoming Events</Text>
-
       {events.length === 0 ? (
         <Text style={styles.noEvents}>No upcoming events.</Text>
       ) : (
         <FlatList
           data={events}
-          keyExtractor={(item) => item.id.toString()}
           renderItem={renderEventCard}
           showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
+          ListHeaderComponent={() => (
+            <Text style={styles.heading}>Upcoming Events</Text>
+          )}
           ListFooterComponent={() => (
             <TouchableOpacity
               style={[styles.button, styles.viewButton]}
@@ -68,9 +73,21 @@ export default function Index() {
           )}
         />
       )}
+      <AnimatedFAB
+        style={styles.fab}
+        color="white"
+        label="Create Event"
+        extended={true}
+        animateFrom={'right'}
+        icon="plus"
+        iconMode={'static'}
+        onPress={() => router.push('/events/create')}
+      />
     </View>
   );
 }
+
+export default withAuth(Index);
 
 const styles = StyleSheet.create({
   container: {
@@ -81,10 +98,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: '#324C80',
+    marginTop: 0,
+    marginBottom: 30,
     textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 16,
-    letterSpacing: -0.3,
   },
   listContainer: {
     padding: 20,
@@ -169,5 +185,12 @@ const styles = StyleSheet.create({
     color: '#334155',
     textAlign: 'center',
     marginTop: 20,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 70,
+    backgroundColor: '#324C80',
   },
 });

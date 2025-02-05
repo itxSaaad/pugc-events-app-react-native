@@ -1,12 +1,15 @@
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Button, Text, TextInput } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
+import withAuth from '@/components/withAuth';
+
 import { Event, events } from '@/data/events';
-export default function EditEvent() {
+
+function EditEvent() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id =
@@ -26,6 +29,7 @@ export default function EditEvent() {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchEvent = (id: string) => {
       try {
@@ -211,6 +215,8 @@ export default function EditEvent() {
     </ScrollView>
   );
 }
+
+export default withAuth(EditEvent);
 
 const styles = StyleSheet.create({
   container: {

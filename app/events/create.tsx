@@ -4,7 +4,9 @@ import { ScrollView, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Button, Text, TextInput } from 'react-native-paper';
 
-export default function CreateEvent() {
+import withAuth from '@/components/withAuth';
+
+function CreateEvent() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -152,6 +154,8 @@ export default function CreateEvent() {
     </ScrollView>
   );
 }
+
+export default withAuth(CreateEvent);
 
 const styles = StyleSheet.create({
   container: {

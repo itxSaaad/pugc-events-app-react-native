@@ -1,27 +1,18 @@
 import { Slot, usePathname, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Image, StatusBar, StyleSheet, View } from 'react-native';
-import {
-  AnimatedFAB,
-  Appbar,
-  Divider,
-  Menu,
-  Provider as PaperProvider,
-} from 'react-native-paper';
+import { Appbar, Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { Provider } from 'react-redux';
-import { store } from '@/store/index';
+
+import store from '@/store';
 
 export default function RootLayout() {
   const pathname = usePathname();
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
+
   const isHome = pathname === '/';
-  const isNotAuth =
-    pathname === '/login' ||
-    pathname === '/register' ||
-    pathname === '/events/create';
+  const isNotAuth = pathname === '/login' || pathname === '/register';
 
   return (
     <Provider store={store}>
@@ -42,40 +33,12 @@ export default function RootLayout() {
               {isNotAuth ? null : (
                 <>
                   {isHome ? (
-                    <Menu
-                      visible={menuVisible}
-                      onDismiss={() => setMenuVisible(false)}
-                      anchor={
-                        <Appbar.Action
-                          style={styles.menuButton}
-                          icon="account-circle"
-                          color="#fff"
-                          onPress={() => setMenuVisible(true)}
-                        />
-                      }
-                      contentStyle={styles.menuContent}
-                    >
-                      <Menu.Item
-                        onPress={() => {
-                          setMenuVisible(false);
-                          router.push('/profile');
-                        }}
-                        title="Profile"
-                        leadingIcon="account"
-                        titleStyle={styles.menuItemText}
-                      />
-
-                      <Divider />
-                      <Menu.Item
-                        onPress={() => {
-                          setMenuVisible(false);
-                          console.log('Logout');
-                        }}
-                        title="Logout"
-                        leadingIcon="logout"
-                        titleStyle={styles.menuItemText}
-                      />
-                    </Menu>
+                    <Appbar.Action
+                      style={styles.menuButton}
+                      icon="account"
+                      color="#fff"
+                      onPress={() => router.push('/profile')}
+                    />
                   ) : (
                     <Appbar.Action
                       style={styles.menuButton}
@@ -92,23 +55,6 @@ export default function RootLayout() {
           <View style={styles.content}>
             <Slot />
           </View>
-
-          {isNotAuth ? null : (
-            <>
-              {isHome ? (
-                <AnimatedFAB
-                  style={styles.fab}
-                  color="white"
-                  label="Create Event"
-                  extended={true}
-                  animateFrom={'right'}
-                  icon="plus"
-                  iconMode={'static'}
-                  onPress={() => router.push('/events/create')}
-                />
-              ) : null}
-            </>
-          )}
         </SafeAreaView>
       </PaperProvider>
     </Provider>
@@ -152,13 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#324C80',
   },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 70,
-    backgroundColor: '#324C80',
-  },
+
   content: {
     flex: 1,
     backgroundColor: '#f5f5f5',

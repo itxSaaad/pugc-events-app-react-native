@@ -5,9 +5,11 @@ import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Text } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
+import withAuth from '@/components/withAuth';
+
 import { Event, events } from '@/data/events';
 
-export default function EventDetails() {
+function EventDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id =
@@ -140,6 +142,8 @@ export default function EventDetails() {
     </ScrollView>
   );
 }
+
+export default withAuth(EventDetails);
 
 const InfoItem = ({
   icon,

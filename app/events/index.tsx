@@ -9,9 +9,12 @@ import {
   View,
 } from 'react-native';
 
-import { Event, events } from '@/data/events';
+import withAuth from '@/components/withAuth';
 
-export default function Index() {
+import { Event, events } from '@/data/events';
+import { AnimatedFAB } from 'react-native-paper';
+
+function Index() {
   const router = useRouter();
 
   const renderEventCard = ({ item }: { item: Event }) => (
@@ -46,8 +49,6 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>All Events</Text>
-
       {events.length === 0 ? (
         <Text style={styles.noEvents}>No events yet.</Text>
       ) : (
@@ -57,11 +58,26 @@ export default function Index() {
           renderItem={renderEventCard}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
+          ListHeaderComponent={() => (
+            <Text style={styles.heading}>All Events</Text>
+          )}
         />
       )}
+      <AnimatedFAB
+        style={styles.fab}
+        color="white"
+        label="Create Event"
+        extended={true}
+        animateFrom={'right'}
+        icon="plus"
+        iconMode={'static'}
+        onPress={() => router.push('/events/create')}
+      />
     </View>
   );
 }
+
+export default withAuth(Index);
 
 const styles = StyleSheet.create({
   container: {
@@ -73,8 +89,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#324C80',
     textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 16,
+    marginTop: 10,
+    marginBottom: 30,
     letterSpacing: -0.3,
   },
   listContainer: {
@@ -159,5 +175,12 @@ const styles = StyleSheet.create({
     color: '#334155',
     textAlign: 'center',
     marginTop: 20,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 70,
+    backgroundColor: '#324C80',
   },
 });
