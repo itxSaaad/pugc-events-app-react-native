@@ -1,77 +1,163 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Base URL
-const API_URL = 'https://your-api.com/api';
+const API_URL = 'https://chief-mistakenly-husky.ngrok-free.app';
 
-// Register
+const config = {
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
+
 export const registerUser = createAsyncThunk(
-  'auth/register',
+  'auth/userRegister',
   async (
-    userData: { name: string; email: string; password: string },
+    {
+      name,
+      email,
+      password,
+      confirmPassword,
+    }: {
+      name: string;
+      email: string;
+      password: string;
+      confirmPassword: string;
+    },
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post(`${API_URL}/register`, userData);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Registration failed'
+      const response = await axios.post(
+        `${API_URL}/api/register`,
+        {
+          name,
+          email,
+          password,
+          password_confirmation: confirmPassword,
+          role: 'student',
+        },
+        config
       );
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+        data:
+          error.response && error.response.data.data
+            ? error.response.data.data
+            : null,
+      });
     }
   }
 );
 
-// Login
 export const loginUser = createAsyncThunk(
-  'auth/login',
+  'auth/userLogin',
   async (
-    credentials: { email: string; password: string },
+    { email, password }: { email: string; password: string },
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post(`${API_URL}/login`, credentials);
-      return response.data;
+      const response = await axios.post(
+        `${API_URL}/api/login`,
+        { email, password },
+        config
+      );
+
+      return response;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      return rejectWithValue({
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+        data:
+          error.response && error.response.data.data
+            ? error.response.data.data
+            : null,
+      });
     }
   }
 );
 
-// Logout
 export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      await axios.post(`${API_URL}/logout`);
-      return true;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Logout failed');
-    }
-  }
-);
-
-// Fetch Profile
-export const fetchProfile = createAsyncThunk(
-  'auth/profile',
+  'auth/userLogout',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const state: any = getState();
-      const token = state.auth.token;
+      const { authToken } = (getState() as any).auth;
 
-      if (!token) {
-        throw new Error('No token found');
+      if (!authToken) {
+        return rejectWithValue({
+          status: 401,
+          message: 'Unauthorized, please login again',
+          data: null,
+        });
       }
 
-      const response = await axios.get(`${API_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.post(
+        `${API_URL}/api/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+        data:
+          error.response && error.response.data.data
+            ? error.response.data.data
+            : null,
+      });
+    }
+  }
+);
+
+export const fetchProfile = createAsyncThunk(
+  'auth/fetchProfile',
+  async (_, { rejectWithValue, getState }) => {
+    const { authToken } = (getState() as any).auth;
+
+    if (!authToken) {
+      return rejectWithValue({
+        status: 401,
+        message: 'Unauthorized, please login again',
+        data: null,
+      });
+    }
+
+    try {
+      const response = await axios.get(`${API_URL}/api/profile`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
-      return response.data;
+      return response;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch profile'
-      );
+      return rejectWithValue({
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+        data:
+          error.response && error.response.data.data
+            ? error.response.data.data
+            : null,
+      });
     }
   }
 );
