@@ -1,10 +1,13 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 
+import Loader from '@/components/Loader';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { registerUser } from '@/store/asyncThunks/authThunks';
+
 export default function Register() {
-  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,19 +15,46 @@ export default function Register() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
 
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const {
+    loading,
+    error: authError,
+    user,
+  } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/');
+    }
+  }, [user]);
+
   const handleRegister = () => {
     if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+      setError('Please fill in all fields');
       return;
     }
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Passwords do not match');
       return;
     }
+
     setError('');
-    console.log('Registering with:', email, password);
-    router.push('/');
+    dispatch(registerUser({ name, email, password, confirmPassword }))
+      .unwrap()
+      .then(() => {
+        router.replace('/');
+      })
+      .catch(() => {
+        setError(authError || 'An error occurred');
+      });
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <View style={styles.container}>
@@ -159,9 +189,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   errorText: {
-    color: 'red',
+    color: '#FF453A',
     textAlign: 'center',
     marginBottom: 16,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 8,
   },
   registerContainer: {
     flexDirection: 'row',
