@@ -4,10 +4,16 @@ import { ScrollView, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Button, Text, TextInput } from 'react-native-paper';
 
+import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { createEvent } from '@/store/asyncThunks/eventThunks';
 
 function CreateEvent() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading, error: eventError } = useAppSelector((state) => state.event);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [department, setDepartment] = useState('');
@@ -19,20 +25,72 @@ function CreateEvent() {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
 
   const handleCreateEvent = () => {
-    if (!title || !description || !department || !date || !time || !location) {
-      setError('Please fill in all fields.');
+    setError('');
+    const errors = [];
+
+    if (!title) {
+      errors.push('Title is required');
+    } else if (typeof title !== 'string' || title.length > 255) {
+      errors.push('Title must be text and not exceed 255 characters');
+    }
+
+    if (!description) {
+      errors.push('Description is required');
+    } else if (typeof description !== 'string') {
+      errors.push('Description must be text');
+    }
+
+    if (!department) {
+      errors.push('Department is required');
+    } else if (typeof department !== 'string') {
+      errors.push('Department must be text');
+    }
+
+    if (!date) {
+      errors.push('Date is required');
+    } else if (!(date instanceof Date) || isNaN(date.getTime())) {
+      errors.push('Invalid date format');
+    }
+
+    if (!time) {
+      errors.push('Time is required');
+    } else if (!(time instanceof Date) || isNaN(time.getTime())) {
+      errors.push('Invalid time format');
+    }
+
+    if (!location) {
+      errors.push('Location is required');
+    } else if (typeof location !== 'string') {
+      errors.push('Location must be text');
+    }
+
+    if (errors.length > 0) {
+      setError(errors.join('\n'));
       return;
     }
-    setError('');
-    console.log('Event created with:', {
-      title,
-      description,
-      department,
-      date,
-      time,
-      location,
+
+    const formattedTime = (time || new Date()).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
     });
-    router.push('/events');
+
+    const formattedDate = (date || new Date()).toISOString().split('T')[0];
+
+    dispatch(
+      createEvent({
+        title,
+        description,
+        department,
+        date: formattedDate,
+        time: formattedTime,
+        location,
+      })
+    )
+      .then(() => {
+        router.push('/events');
+      })
+      .catch((error) => setError(error.message));
   };
 
   const handleConfirmDate = (selectedDate: Date) => {
@@ -45,17 +103,18 @@ function CreateEvent() {
     setTime(selectedTime);
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium" style={styles.heading}>
         Create New Event
       </Text>
 
-      {error ? (
-        <Text variant="bodyMedium" style={styles.errorText}>
-          {error}
-        </Text>
-      ) : null}
+      {error && <Text style={styles.errorText}>{error}</Text>}
+      {eventError && <Text style={styles.errorText}>{eventError}</Text>}
 
       <TextInput
         label="Title"
