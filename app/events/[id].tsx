@@ -6,20 +6,29 @@ import { Button, Chip, Text } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
-
-import { Event, events } from '@/data/events';
+import { Event } from '@/data/events';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { deleteEvent } from '@/store/asyncThunks/eventThunks';
 
 function EventDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
+
+  const {
+    events,
+    error: eventError,
+    loading,
+  } = useAppSelector((state) => state.event);
+
   const id =
     typeof params.id === 'string'
       ? params.id
       : Array.isArray(params.id)
       ? params.id[0]
       : '';
+
   const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -31,8 +40,6 @@ function EventDetails() {
         setError(
           error instanceof Error ? error.message : 'An unknown error occurred'
         );
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -72,7 +79,7 @@ function EventDetails() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Image
-          source={{ uri: event.image }}
+          source={{ uri: '@/assets/images/events-bg.jpg' }}
           style={styles.image}
           defaultSource={require('@/assets/images/events-bg.jpg')}
         />
@@ -96,11 +103,7 @@ function EventDetails() {
         <View style={styles.infoSection}>
           <InfoItem icon="domain" label="Department" value={event.department} />
           <InfoItem icon="map-marker" label="Location" value={event.location} />
-          <InfoItem
-            icon="clock-outline"
-            label="Time"
-            value={new Date(event.time).toLocaleTimeString()}
-          />
+          <InfoItem icon="clock-outline" label="Time" value={event.time} />
         </View>
       </View>
 
@@ -131,7 +134,9 @@ function EventDetails() {
         <Button
           mode="contained"
           icon="delete"
-          onPress={() => router.push(`/events/edit/${event.id}`)}
+          onPress={() =>
+            dispatch(deleteEvent(event.id)).then(() => router.push('/events'))
+          }
           style={styles.deleteButton}
           contentStyle={styles.buttonContent}
           textColor="white"
