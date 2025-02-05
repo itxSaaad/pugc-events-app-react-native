@@ -6,12 +6,21 @@ import { Button, Text, TextInput } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { updateEvent } from '@/store/asyncThunks/eventThunks';
 
-import { Event, events } from '@/data/events';
+import { Event } from '@/data/events';
 
 function EditEvent() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
+
+  const {
+    events,
+    error: eventError,
+    loading,
+  } = useAppSelector((state) => state.event);
   const id =
     typeof params.id === 'string'
       ? params.id
@@ -28,7 +37,6 @@ function EditEvent() {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvent = (id: string) => {
@@ -39,14 +47,12 @@ function EditEvent() {
         setDescription(event?.description ?? '');
         setDepartment(event?.department ?? '');
         setDate(event?.date ? new Date(event.date) : null);
-        setTime(event?.time ? new Date(event.time) : null);
+        setTime(event?.time ? new Date(`${event.date}T${event.time}`) : null);
         setLocation(event?.location ?? '');
       } catch (error) {
         setError(
           error instanceof Error ? error.message : 'An unknown error occurred'
         );
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -58,21 +64,85 @@ function EditEvent() {
   if (loading) return <Loader />;
 
   const handleUpdateEvent = async () => {
-    if (!title || !description || !department || !date || !time || !location) {
-      setError('Please fill in all fields.');
+    setError('');
+    const errors = [];
+
+    if (!title) {
+      errors.push('Title is required');
+    } else if (typeof title !== 'string' || title.length > 255) {
+      errors.push('Title must be text and not exceed 255 characters');
+    }
+
+    if (!description) {
+      errors.push('Description is required');
+    } else if (typeof description !== 'string') {
+      errors.push('Description must be text');
+    }
+
+    if (!department) {
+      errors.push('Department is required');
+    } else if (typeof department !== 'string') {
+      errors.push('Department must be text');
+    }
+
+    if (!date) {
+      errors.push('Date is required');
+    } else if (!(date instanceof Date) || isNaN(date.getTime())) {
+      errors.push('Invalid date format');
+    }
+
+    if (!time) {
+      errors.push('Time is required');
+    } else if (!(time instanceof Date) || isNaN(time.getTime())) {
+      errors.push('Invalid time format');
+    }
+
+    if (!location) {
+      errors.push('Location is required');
+    } else if (typeof location !== 'string') {
+      errors.push('Location must be text');
+    }
+
+    if (errors.length > 0) {
+      setError(errors.join('\n'));
       return;
     }
-    setError('');
-    // Update event in the database
-    console.log('Event created with:', {
+
+    const formattedTime = (time || new Date()).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const formattedDate = (date || new Date()).toISOString().split('T')[0];
+
+    console.log(
+      'Submitting event data:',
       title,
       description,
       department,
-      date,
-      time,
-      location,
-    });
-    router.push('/events');
+      formattedDate,
+      formattedTime,
+      location
+    );
+
+    dispatch(
+      updateEvent({
+        eventId: id,
+        eventData: {
+          title,
+          description,
+          department,
+          date: formattedDate,
+          time: formattedTime,
+          location,
+        },
+      })
+    )
+      .then(() => {
+        router.push('/events');
+      })
+      .catch((error) => setError(error.message));
   };
 
   if (error || !event) {
