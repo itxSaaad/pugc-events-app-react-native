@@ -1,24 +1,53 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 
+import Loader from '@/components/Loader';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { loginUser } from '@/store/asyncThunks/authThunks';
+
 export default function Login() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const {
+    loading,
+    error: authError,
+    user,
+  } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/');
+    }
+  }, [user]);
+
+  const handleLogin = async () => {
     if (!email || !password) {
-      setError('Please enter your email and password.');
+      setError('Please fill in all fields');
       return;
     }
+
     setError('');
-    console.log('Logging in with:', email, password);
-    router.push('/');
+    dispatch(loginUser({ email, password }))
+      .unwrap()
+      .then(() => {
+        router.replace('/');
+      })
+      .catch(() => {
+        setError(authError || 'An error occurred');
+      });
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <View style={styles.container}>
@@ -61,7 +90,7 @@ export default function Login() {
         left={<TextInput.Icon icon="lock" />}
         right={
           <TextInput.Icon
-            icon={passwordVisible ? 'eye-off' : 'eye'}
+            icon={passwordVisible ? 'eye' : 'eye-off'}
             onPress={() => setPasswordVisible(!passwordVisible)}
           />
         }
@@ -123,9 +152,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   errorText: {
-    color: 'red',
+    color: '#FF453A',
     textAlign: 'center',
     marginBottom: 16,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 8,
   },
   registerContainer: {
     flexDirection: 'row',
