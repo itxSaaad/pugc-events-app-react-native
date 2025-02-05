@@ -42,6 +42,7 @@ export const fetchEventById = createAsyncThunk(
   'events/fetchById',
   async (eventId: string, { rejectWithValue, getState }) => {
     const { authToken } = (getState() as any).auth;
+
     if (!authToken) {
       return rejectWithValue({
         status: 401,
@@ -49,12 +50,14 @@ export const fetchEventById = createAsyncThunk(
         data: null,
       });
     }
+
     try {
       const response = await axios.get(`${API_URL}/api/events/${eventId}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       });
+
       return response;
     } catch (error: any) {
       return rejectWithValue({

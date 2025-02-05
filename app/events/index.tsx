@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,13 +19,28 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchEvents } from '@/store/asyncThunks/eventThunks';
 
 function Index() {
+  const [refreshing, setRefreshing] = useState(false);
+
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  const { user, loading: userLoading } = useAppSelector((state) => state.auth);
   const { events, loading, error } = useAppSelector((state) => state.event);
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+    }
+  }, [user]);
 
   useEffect(() => {
     dispatch(fetchEvents());
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    dispatch(fetchEvents()).finally(() => setRefreshing(false));
+  };
 
   const renderEventCard = ({ item }: { item: Event }) => (
     <TouchableOpacity
@@ -56,16 +72,15 @@ function Index() {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (loading || userLoading) {
     return <Loader />;
   }
 
   return (
     <View style={styles.container}>
-      {error && (
+      {error ? (
         <Text style={styles.noEvents}>{error}. Please try again later.</Text>
-      )}
-      {events.length === 0 ? (
+      ) : events.length === 0 ? (
         <Text style={styles.noEvents}>No events yet.</Text>
       ) : (
         <FlatList
@@ -77,18 +92,24 @@ function Index() {
           ListHeaderComponent={() => (
             <Text style={styles.heading}>All Events</Text>
           )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       )}
-      <AnimatedFAB
-        style={styles.fab}
-        color="white"
-        label="Create Event"
-        extended={true}
-        animateFrom={'right'}
-        icon="plus"
-        iconMode={'static'}
-        onPress={() => router.push('/events/create')}
-      />
+
+      {user?.role === 'admin' && (
+        <AnimatedFAB
+          style={styles.fab}
+          color="white"
+          label="Create Event"
+          extended={true}
+          animateFrom={'right'}
+          icon="plus"
+          iconMode={'static'}
+          onPress={() => router.push('/events/create')}
+        />
+      )}
     </View>
   );
 }

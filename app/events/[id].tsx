@@ -11,10 +11,14 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { deleteEvent } from '@/store/asyncThunks/eventThunks';
 
 function EventDetails() {
+  const [error, setError] = useState('');
+  const [event, setEvent] = useState<Event | null>(null);
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const dispatch = useAppDispatch();
 
+  const { user, loading: userLoading } = useAppSelector((state) => state.auth);
   const {
     events,
     error: eventError,
@@ -28,29 +32,22 @@ function EventDetails() {
       ? params.id[0]
       : '';
 
-  const [event, setEvent] = useState<Event | null>(null);
-  const [error, setError] = useState('');
-
   useEffect(() => {
-    const fetchEvent = (id: string) => {
-      try {
-        const event = events.find((event) => event.id === id) ?? null;
+    if (events.length) {
+      const event = events.find((event) => event.id === id);
+      if (event) {
         setEvent(event);
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : 'An unknown error occurred'
-        );
+      } else {
+        setError('Event not found');
       }
-    };
-
-    if (id) {
-      fetchEvent(id);
     }
-  }, [id]);
+  }, [events]);
 
-  if (loading) return <Loader />;
+  if (loading || userLoading) {
+    return <Loader />;
+  }
 
-  if (error || !event) {
+  if (error || eventError || !event) {
     return (
       <View style={styles.errorContainer}>
         <Text variant="headlineLarge" style={styles.title}>
@@ -120,30 +117,32 @@ function EventDetails() {
         </Button>
       </View>
 
-      <View style={styles.actions}>
-        <Button
-          mode="contained"
-          icon="pencil"
-          onPress={() => router.push(`/events/edit/${event.id}`)}
-          style={styles.editButton}
-          contentStyle={styles.buttonContent}
-          textColor="white"
-        >
-          Edit Event
-        </Button>
-        <Button
-          mode="contained"
-          icon="delete"
-          onPress={() =>
-            dispatch(deleteEvent(event.id)).then(() => router.push('/events'))
-          }
-          style={styles.deleteButton}
-          contentStyle={styles.buttonContent}
-          textColor="white"
-        >
-          Delete Event
-        </Button>
-      </View>
+      {user?.role === 'admin' && event && (
+        <View style={styles.actions}>
+          <Button
+            mode="contained"
+            icon="pencil"
+            onPress={() => router.push(`/events/edit/${event.id}`)}
+            style={styles.editButton}
+            contentStyle={styles.buttonContent}
+            textColor="white"
+          >
+            Edit Event
+          </Button>
+          <Button
+            mode="contained"
+            icon="delete"
+            onPress={() =>
+              dispatch(deleteEvent(event.id)).then(() => router.push('/events'))
+            }
+            style={styles.deleteButton}
+            contentStyle={styles.buttonContent}
+            textColor="white"
+          >
+            Delete Event
+          </Button>
+        </View>
+      )}
     </ScrollView>
   );
 }

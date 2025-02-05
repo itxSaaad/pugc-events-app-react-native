@@ -10,10 +10,6 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { createEvent } from '@/store/asyncThunks/eventThunks';
 
 function CreateEvent() {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { loading, error: eventError } = useAppSelector((state) => state.event);
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [department, setDepartment] = useState('');
@@ -23,6 +19,10 @@ function CreateEvent() {
   const [error, setError] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading, error: eventError } = useAppSelector((state) => state.event);
 
   const handleCreateEvent = () => {
     setError('');

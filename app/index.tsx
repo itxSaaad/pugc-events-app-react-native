@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,12 +12,39 @@ import {
 } from 'react-native';
 import { AnimatedFAB } from 'react-native-paper';
 
+import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
-
-import { Event, events } from '@/data/events';
+import { Event } from '@/data/events';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchEvents } from '@/store/asyncThunks/eventThunks';
 
 function Index() {
+  const [refreshing, setRefreshing] = useState(false);
+
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const {
+    user,
+    loading: userLoading,
+    error: userError,
+  } = useAppSelector((state) => state.auth);
+  const { events, loading, error } = useAppSelector((state) => state.event);
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+    }
+  }, [user]);
+
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    dispatch(fetchEvents()).finally(() => setRefreshing(false));
+  };
 
   const renderEventCard = ({ item }: { item: Event }) => (
     <TouchableOpacity
@@ -29,7 +57,7 @@ function Index() {
       }
     >
       <Image
-        source={{ uri: item.image }}
+        source={{ uri: '@/assets/images/events-bg.jpg' }}
         style={styles.eventImage}
         defaultSource={require('@/assets/images/events-bg.jpg')}
       />
@@ -48,13 +76,19 @@ function Index() {
     </TouchableOpacity>
   );
 
+  if (loading || userLoading) {
+    return <Loader />;
+  }
+
   return (
     <View style={styles.container}>
-      {events.length === 0 ? (
+      {error || userError ? (
+        <Text>{error || userError}</Text>
+      ) : events.length === 0 ? (
         <Text style={styles.noEvents}>No upcoming events.</Text>
       ) : (
         <FlatList
-          data={events}
+          data={events.slice(0, 3)}
           renderItem={renderEventCard}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
@@ -71,18 +105,23 @@ function Index() {
               <Text style={styles.buttonText}>View all Events</Text>
             </TouchableOpacity>
           )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       )}
-      <AnimatedFAB
-        style={styles.fab}
-        color="white"
-        label="Create Event"
-        extended={true}
-        animateFrom={'right'}
-        icon="plus"
-        iconMode={'static'}
-        onPress={() => router.push('/events/create')}
-      />
+      {user?.role === 'admin' && (
+        <AnimatedFAB
+          style={styles.fab}
+          color="white"
+          label="Create Event"
+          extended={true}
+          animateFrom={'right'}
+          icon="plus"
+          iconMode={'static'}
+          onPress={() => router.push('/events/create')}
+        />
+      )}
     </View>
   );
 }

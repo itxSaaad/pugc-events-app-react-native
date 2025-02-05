@@ -6,27 +6,11 @@ import { Button, Text, TextInput } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
+import { Event } from '@/data/events';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { updateEvent } from '@/store/asyncThunks/eventThunks';
 
-import { Event } from '@/data/events';
-
 function EditEvent() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const dispatch = useAppDispatch();
-
-  const {
-    events,
-    error: eventError,
-    loading,
-  } = useAppSelector((state) => state.event);
-  const id =
-    typeof params.id === 'string'
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : '';
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [department, setDepartment] = useState('');
@@ -38,28 +22,40 @@ function EditEvent() {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [event, setEvent] = useState<Event | null>(null);
 
-  useEffect(() => {
-    const fetchEvent = (id: string) => {
-      try {
-        const event = events.find((event) => event.id === id) ?? null;
-        setEvent(event);
-        setTitle(event?.title ?? '');
-        setDescription(event?.description ?? '');
-        setDepartment(event?.department ?? '');
-        setDate(event?.date ? new Date(event.date) : null);
-        setTime(event?.time ? new Date(`${event.date}T${event.time}`) : null);
-        setLocation(event?.location ?? '');
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : 'An unknown error occurred'
-        );
-      }
-    };
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const dispatch = useAppDispatch();
 
-    if (id) {
-      fetchEvent(id);
+  const {
+    events,
+    error: eventError,
+    loading,
+  } = useAppSelector((state) => state.event);
+
+  const id =
+    typeof params.id === 'string'
+      ? params.id
+      : Array.isArray(params.id)
+      ? params.id[0]
+      : '';
+
+  useEffect(() => {
+    if (events.length) {
+      const event = events.find((event) => event.id === id);
+
+      if (event) {
+        setEvent(event);
+        setTitle(event.title);
+        setDescription(event.description);
+        setDepartment(event.department);
+        setDate(new Date(event.date));
+        setTime(new Date(event.time));
+        setLocation(event.location);
+      } else {
+        setError('Event not found');
+      }
     }
-  }, [id]);
+  }, [events]);
 
   if (loading) return <Loader />;
 
@@ -116,16 +112,6 @@ function EditEvent() {
 
     const formattedDate = (date || new Date()).toISOString().split('T')[0];
 
-    console.log(
-      'Submitting event data:',
-      title,
-      description,
-      department,
-      formattedDate,
-      formattedTime,
-      location
-    );
-
     dispatch(
       updateEvent({
         eventId: id,
@@ -145,7 +131,7 @@ function EditEvent() {
       .catch((error) => setError(error.message));
   };
 
-  if (error || !event) {
+  if (eventError || error || !event) {
     return (
       <View style={styles.errorContainer}>
         <Text variant="headlineLarge" style={styles.title}>

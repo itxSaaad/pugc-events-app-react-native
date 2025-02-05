@@ -31,10 +31,52 @@ const initialState: AuthState = {
   error: null,
 };
 
+async function saveDataToAsyncStorage(key: string, data: any) {
+  try {
+    if (data) {
+      await AsyncStorage.setItem(key, JSON.stringify(data));
+    }
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Error saving data to AsyncStorage'
+    );
+  }
+}
+
+async function getDataFromAsyncStorage(key: string) {
+  try {
+    const data = await AsyncStorage.getItem(key);
+
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Error getting data from AsyncStorage'
+    );
+  }
+}
+
+async function clearAsyncStorage(key: string) {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Error clearing data from AsyncStorage'
+    );
+  }
+}
+
 (async () => {
-  const user = await AsyncStorage.getItem('user');
-  const authToken = await AsyncStorage.getItem('authToken');
-  initialState.user = user ? JSON.parse(user) : null;
+  const user = await getDataFromAsyncStorage('user');
+  const authToken = await getDataFromAsyncStorage('authToken');
+  initialState.user = user;
   initialState.authToken = authToken;
 })();
 
@@ -57,11 +99,8 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
-        AsyncStorage.setItem('authToken', action.payload.data.data.token);
-        AsyncStorage.setItem(
-          'user',
-          JSON.stringify(action.payload.data.data.user)
-        );
+        saveDataToAsyncStorage('authToken', action.payload.data.data.token);
+        saveDataToAsyncStorage('user', action.payload.data.data.user);
       })
       .addCase(registerUser.rejected, (state, action: any) => {
         state.loading = false;
@@ -76,11 +115,8 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
-        AsyncStorage.setItem('authToken', action.payload.data.data.token);
-        AsyncStorage.setItem(
-          'user',
-          JSON.stringify(action.payload.data.data.user)
-        );
+        saveDataToAsyncStorage('authToken', action.payload.data.data.token);
+        saveDataToAsyncStorage('user', action.payload.data.data.user);
       })
       .addCase(loginUser.rejected, (state, action: any) => {
         state.loading = false;
@@ -105,8 +141,8 @@ const authSlice = createSlice({
         state.authToken = null;
         state.isAuthenticated = false;
         state.loading = false;
-        AsyncStorage.removeItem('authToken');
-        AsyncStorage.removeItem('user');
+        clearAsyncStorage('authToken');
+        clearAsyncStorage('user');
       })
       .addCase(logoutUser.rejected, (state) => {
         state.loading = false;
