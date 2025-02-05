@@ -1,13 +1,13 @@
 export interface Event {
   id: string;
-  image: string;
+  // image: string;
   title: string;
   description: string;
   department: string;
   date: string;
   time: string;
   location: string;
-  created_by: string;
+  created_by?: string;
 }
 
 export const events: Event[] = [

@@ -1,5 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchEvents, updateEvent } from '../asyncThunks/eventThunks';
+import {
+  fetchEvents,
+  fetchEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from '../asyncThunks/eventThunks';
 
 type Event = {
   id: string;
@@ -14,52 +20,95 @@ type Event = {
 type EventState = {
   events: Event[];
   loading: boolean;
+  message: string | null;
   error: string | null;
 };
 
 const initialState: EventState = {
   events: [],
   loading: false,
+  message: null,
   error: null,
 };
 
 const eventSlice = createSlice({
-  name: 'event',
+  name: 'events',
   initialState,
   reducers: {
-    addEvent: (state, action) => {
-      state.events.push(action.payload);
-    },
-    removeEvent: (state, action) => {
-      state.events = state.events.filter(
-        (event) => event.id !== action.payload
-      );
+    clearMessage: (state) => {
+      state.message = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchEvents.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchEvents.fulfilled, (state, action) => {
+        state.events = action.payload.data.data.events;
         state.loading = false;
-        state.events = action.payload;
+        state.error = null;
       })
-      .addCase(fetchEvents.rejected, (state, action) => {
+      .addCase(fetchEvents.rejected, (state, action: any) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload.message;
+      })
+      .addCase(fetchEventById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchEventById.fulfilled, (state, action) => {
+        state.events = [action.payload.data.data.event];
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(fetchEventById.rejected, (state, action: any) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      })
+      .addCase(createEvent.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createEvent.fulfilled, (state, action) => {
+        state.events = [...state.events, action.payload.data.data.event];
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(createEvent.rejected, (state, action: any) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      })
+      .addCase(updateEvent.pending, (state) => {
+        state.loading = true;
       })
       .addCase(updateEvent.fulfilled, (state, action) => {
-        const index = state.events.findIndex(
-          (event) => event.id === action.payload.id
+        const updatedEvent = action.payload.data.data.event;
+        state.events = state.events.map((event) =>
+          event.id === updatedEvent.id ? updatedEvent : event
         );
-        if (index !== -1) {
-          state.events[index] = action.payload;
-        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(updateEvent.rejected, (state, action: any) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      })
+      .addCase(deleteEvent.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteEvent.fulfilled, (state, action) => {
+        state.events = state.events.filter(
+          (event) => event.id !== action.payload.data.data.eventId
+        );
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(deleteEvent.rejected, (state, action: any) => {
+        state.loading = false;
+        state.error = action.payload.message;
       });
   },
 });
 
-export const { addEvent, removeEvent } = eventSlice.actions;
+export const { clearMessage } = eventSlice.actions;
+
 export default eventSlice.reducer;
