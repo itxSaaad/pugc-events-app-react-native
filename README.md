@@ -1,50 +1,169 @@
-# Welcome to your Expo app 👋
+# PUGC Events - React Native Mobile App (Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> This project is a part of the Mobile Application Development course at PUGC. The project is developed by the students of the BS Computer Science program at PUGC. The project is developed using the React Native framework and the Expo CLI. The project is a mobile app that allows users to view upcoming events, register for events, and view event details. The app also allows users to view their profile information. The app is connected to a Laravel API server that provides endpoints for the mobile app to interact with the database.
 
-## Get started
+<br/>
+<div align="center">
+  <h3 align="center">PUGC Events - React Native Mobile App (Expo)</h3>
 
-1. Install dependencies
+  <p align="center">
+      A Mobile App for the PUGC Events API Server
+    <br/>
+    <br/>
+    <a href="https://github.com/itxsaaad/pugc-events-app-react-native"><strong>Explore the docs »</strong></a>
+    <br/>
+    <br/>
+    <a href="https://github.com/itxsaaad/pugc-events-app-react-native/issues">Report Bug</a>
+    .
+    <a href="https://github.com/itxsaaad/pugc-events-app-react-native/issues">Request Feature</a>
+  </p>
+</div>
 
-   ```bash
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+
+## Table Of Contents
+
+- [PUGC Events - React Native Mobile App (Expo)](#pugc-events---react-native-mobile-app-expo)
+  - [Table Of Contents](#table-of-contents)
+  - [About The Project](#about-the-project)
+  - [Features](#features)
+    - [User Authentication](#user-authentication)
+    - [Events](#events)
+    - [RSVP](#rsvp)
+  - [Built With](#built-with)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+  - [Roadmap](#roadmap)
+  - [Contributing](#contributing)
+  - [Authors](#authors)
+  - [License](#license)
+  - [Support](#support)
+
+## About The Project
+
+PUGC Events is a React Native mobile app built with Expo. The app provides an intuitive interface for users to browse and register for events at PUGC. Users can view event details, RSVP to events, manage their registrations, and update their profile information. The app connects to a Laravel backend API to handle data persistence and authentication.
+
+## Features
+
+### User Authentication
+
+- **User Registration**: User can register using their name, email and password.
+- **User Login**: User can login using their email and password.
+- **User Logout**: User can logout from the app.
+- **User Profile**: User can view their profile information.
+
+### Events
+
+- **Event Creation**: Admin can create an event with the following details:
+
+  - Event Title
+  - Event Description
+  - Event Date
+  - Event Time
+  - Event Location
+
+- **Event Update**: Admin can update the event details.
+- **Event Deletion**: Admin can delete the event.
+- **Event Details**: User can view the event details.
+- **Event List**: User can view the list of all events.
+
+### RSVP
+
+- **Event Registration**: User can register for an event.
+- **Event Unregistration**: User can unregister from an event.
+
+## Built With
+
+- [React Native](https://reactnative.dev/) - React Native is an open-source mobile application framework created by Facebook.
+- [Expo](https://expo.dev/) - Expo is an open-source platform for making universal native apps for Android, iOS, and the web with JavaScript and React.
+- [Expo Router](https://reactnavigation.org/docs/getting-started) - Expo Router is a routing library for React Native apps built with Expo.
+- [React Navigation](https://reactnavigation.org/) - React Navigation is a popular library for routing and navigation in a React Native app.
+- [Axios](https://axios-http.com/) - Axios is a popular promise-based HTTP client for the browser and Node.js.
+- [React Native Paper](https://callstack.github.io/react-native-paper/) - React Native Paper is a high-quality, standard-compliant Material Design library that has you covered in all major use-cases.
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/) - Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine.
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) - Expo CLI is a command-line tool that is the main interface between a developer and Expo tools.
+- [Laravel API Server](https://github.com/itxSaaad/pugc-events-server-laravel) - Laravel API server for the PUGC Events mobile app.
+
+### Installation
+
+1. Clone the repo
+
+   ```sh
+   git clone https://github.com/itxSaaad/pugc-events-app-react-native.git
+   ```
+
+2. Install NPM packages
+
+   ```sh
    npm install
    ```
 
-2. Start the app
+3. Start the Expo server
 
-   ```bash
-    npx expo start
+   ```sh
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Open the Expo Go app on your mobile device and scan the QR code to run the app.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Roadmap
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+See the [open issues](https://github.com/itxsaaad/pugc-events-app-react-native) for a list of proposed features (and known issues).
 
-## Get a fresh project
+## Contributing
 
-When you're ready, run:
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-```bash
-npm run reset-project
-```
+- If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/itxsaaad/pugc-events-app-react-native/issues/new) to discuss it, or directly create a pull request after you edit the _README.md_ file with necessary changes.
+- Please make sure you check your spelling and grammar.
+- Create individual PR for each suggestion.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
 
-## Learn more
+1. Fork the repo
+2. Clone the project
+3. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+4. Commit your changes (`git commit -m "Add some AmazingFeature"`)
+5. Push to the branch (`git push origin feature/AmazingFeature`)
+6. Open a pull request
 
-To learn more about developing your project with Expo, look at the following resources:
+## Authors
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **Muhammad Saad** - [itxsaaad](https://github.com/itxsaaad)
+- **Mirza Moiz** - [mirza-moiz](https://github.com/mirza-moiz)
+- **Hassnain Raza** - [hassnain512](https://github.com/hassnain512)
 
-## Join the community
+See also the list of [contributors](https://github.com/itxsaaad/pugc-events-app-react-native/graphs/contributors)
 
-Join our community of developers creating universal apps.
+## License
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## Support
+
+Give ⭐️ if you like this project!
+
+<a href="https://www.buymeacoffee.com/itxSaaad"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" width="200" /></a>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+
+[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/pugc-events-app-react-native.svg?style=for-the-badge
+[contributors-url]: https://github.com/itxsaaad/pugc-events-app-react-native/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/itxsaaad/pugc-events-app-react-native.svg?style=for-the-badge
+[forks-url]: https://github.com/itxsaaad/pugc-events-app-react-native/network/members
+[stars-shield]: https://img.shields.io/github/stars/itxsaaad/pugc-events-app-react-native.svg?style=for-the-badge
+[stars-url]: https://github.com/itxsaaad/pugc-events-app-react-native/stargazers
+[issues-shield]: https://img.shields.io/github/issues/itxsaaad/pugc-events-app-react-native.svg?style=for-the-badge
+[issues-url]: https://github.com/itxsaaad/pugc-events-app-react-native/issues
+[license-shield]: https://img.shields.io/github/license/itxsaaad/pugc-events-app-react-native.svg?style=for-the-badge
+[license-url]: https://github.com/itxsaaad/pugc-events-app-react-native/blob/main/LICENSE.md
