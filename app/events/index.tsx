@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import {
   FlatList,
   Image,
@@ -8,14 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-import withAuth from '@/components/withAuth';
-
-import { Event, events } from '@/data/events';
 import { AnimatedFAB } from 'react-native-paper';
+
+import Loader from '@/components/Loader';
+import withAuth from '@/components/withAuth';
+import { Event } from '@/data/events';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { fetchEvents } from '@/store/asyncThunks/eventThunks';
 
 function Index() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { events, loading, error } = useAppSelector((state) => state.event);
+
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, []);
 
   const renderEventCard = ({ item }: { item: Event }) => (
     <TouchableOpacity
@@ -28,7 +37,7 @@ function Index() {
       }
     >
       <Image
-        source={{ uri: item.image }}
+        source={{ uri: '@/assets/images/events-bg.jpg' }}
         style={styles.eventImage}
         defaultSource={require('@/assets/images/events-bg.jpg')}
       />
@@ -47,8 +56,15 @@ function Index() {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <View style={styles.container}>
+      {error && (
+        <Text style={styles.noEvents}>{error}. Please try again later.</Text>
+      )}
       {events.length === 0 ? (
         <Text style={styles.noEvents}>No events yet.</Text>
       ) : (
