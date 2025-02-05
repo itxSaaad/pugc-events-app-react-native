@@ -27,7 +27,6 @@ export default function Index() {
       <Image
         source={{ uri: item.image }}
         style={styles.eventImage}
-        resizeMode="cover"
         defaultSource={require('@/assets/images/events-bg.jpg')}
       />
       <View style={styles.eventContent}>

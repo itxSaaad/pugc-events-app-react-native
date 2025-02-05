@@ -72,7 +72,6 @@ export default function EventDetails() {
         <Image
           source={{ uri: event.image }}
           style={styles.image}
-          resizeMode="cover"
           defaultSource={require('@/assets/images/events-bg.jpg')}
         />
         <Text variant="headlineMedium" style={styles.title}>

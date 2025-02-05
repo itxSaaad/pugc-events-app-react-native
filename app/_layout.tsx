@@ -10,6 +10,9 @@ import {
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Provider } from 'react-redux';
+import { store } from '@/store/index';
+
 export default function RootLayout() {
   const pathname = usePathname();
   const router = useRouter();
@@ -21,109 +24,94 @@ export default function RootLayout() {
     pathname === '/events/create';
 
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar backgroundColor={'#324C80'} barStyle={'light-content'} />
+    <Provider store={store}>
+      <PaperProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar backgroundColor={'#324C80'} barStyle={'light-content'} />
 
-        <View style={styles.header}>
-          <Appbar.Header style={styles.headerContent}>
-            <Image
-              source={require('../assets/images/favicon.png')}
-              style={styles.logo}
-            />
-            <Appbar.Content
-              title="PUGC Events"
-              titleStyle={styles.headerText}
-            />
-            {isNotAuth ? null : (
-              <>
-                {isHome ? (
-                  <Menu
-                    visible={menuVisible}
-                    onDismiss={() => setMenuVisible(false)}
-                    anchor={
-                      <Appbar.Action
-                        style={styles.menuButton}
-                        icon="account-circle"
-                        color="#fff"
-                        onPress={() => setMenuVisible(true)}
-                      />
-                    }
-                    contentStyle={styles.menuContent}
-                  >
-                    <Menu.Item
-                      onPress={() => {
-                        setMenuVisible(false);
-                        router.push('/profile');
-                      }}
-                      title="Profile"
-                      leadingIcon="account"
-                      titleStyle={styles.menuItemText}
-                    />
-                    <Menu.Item
-                      onPress={() => {
-                        setMenuVisible(false);
-                        router.push('/login');
-                      }}
-                      title="login"
-                      leadingIcon="account"
-                      titleStyle={styles.menuItemText}
-                    />
-                    <Menu.Item
-                      onPress={() => {
-                        setMenuVisible(false);
-                        router.push('/register');
-                      }}
-                      title="register"
-                      leadingIcon="account"
-                      titleStyle={styles.menuItemText}
-                    />
-                    <Divider />
-                    <Menu.Item
-                      onPress={() => {
-                        setMenuVisible(false);
-                        console.log('Logout');
-                      }}
-                      title="Logout"
-                      leadingIcon="logout"
-                      titleStyle={styles.menuItemText}
-                    />
-                  </Menu>
-                ) : (
-                  <Appbar.Action
-                    style={styles.menuButton}
-                    icon="home"
-                    color="#fff"
-                    onPress={() => router.push('/')}
-                  />
-                )}
-              </>
-            )}
-          </Appbar.Header>
-        </View>
-
-        <View style={styles.content}>
-          <Slot />
-        </View>
-
-        {isNotAuth ? null : (
-          <>
-            {isHome ? (
-              <AnimatedFAB
-                style={styles.fab}
-                color="white"
-                label="Create Event"
-                extended={true}
-                animateFrom={'right'}
-                icon="plus"
-                iconMode={'static'}
-                onPress={() => router.push('/events/create')}
+          <View style={styles.header}>
+            <Appbar.Header style={styles.headerContent}>
+              <Image
+                source={require('../assets/images/favicon.png')}
+                style={styles.logo}
               />
-            ) : null}
-          </>
-        )}
-      </SafeAreaView>
-    </PaperProvider>
+              <Appbar.Content
+                title="PUGC Events"
+                titleStyle={styles.headerText}
+              />
+              {isNotAuth ? null : (
+                <>
+                  {isHome ? (
+                    <Menu
+                      visible={menuVisible}
+                      onDismiss={() => setMenuVisible(false)}
+                      anchor={
+                        <Appbar.Action
+                          style={styles.menuButton}
+                          icon="account-circle"
+                          color="#fff"
+                          onPress={() => setMenuVisible(true)}
+                        />
+                      }
+                      contentStyle={styles.menuContent}
+                    >
+                      <Menu.Item
+                        onPress={() => {
+                          setMenuVisible(false);
+                          router.push('/profile');
+                        }}
+                        title="Profile"
+                        leadingIcon="account"
+                        titleStyle={styles.menuItemText}
+                      />
+
+                      <Divider />
+                      <Menu.Item
+                        onPress={() => {
+                          setMenuVisible(false);
+                          console.log('Logout');
+                        }}
+                        title="Logout"
+                        leadingIcon="logout"
+                        titleStyle={styles.menuItemText}
+                      />
+                    </Menu>
+                  ) : (
+                    <Appbar.Action
+                      style={styles.menuButton}
+                      icon="home"
+                      color="#fff"
+                      onPress={() => router.push('/')}
+                    />
+                  )}
+                </>
+              )}
+            </Appbar.Header>
+          </View>
+
+          <View style={styles.content}>
+            <Slot />
+          </View>
+
+          {isNotAuth ? null : (
+            <>
+              {isHome ? (
+                <AnimatedFAB
+                  style={styles.fab}
+                  color="white"
+                  label="Create Event"
+                  extended={true}
+                  animateFrom={'right'}
+                  icon="plus"
+                  iconMode={'static'}
+                  onPress={() => router.push('/events/create')}
+                />
+              ) : null}
+            </>
+          )}
+        </SafeAreaView>
+      </PaperProvider>
+    </Provider>
   );
 }
 
@@ -142,7 +130,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 32,
     height: 32,
-    resizeMode: 'contain',
     marginHorizontal: 10,
   },
   headerText: {
