@@ -14,9 +14,9 @@ import { AnimatedFAB } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
-import { Event } from '@/data/events';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchEvents } from '@/store/asyncThunks/eventThunks';
+import { Event } from '@/store/slices/eventSlice';
 
 function Index() {
   const [refreshing, setRefreshing] = useState(false);
@@ -24,7 +24,11 @@ function Index() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const { user, loading: userLoading } = useAppSelector((state) => state.auth);
+  const {
+    user,
+    loading: userLoading,
+    error: userError,
+  } = useAppSelector((state) => state.auth);
   const { events, loading, error } = useAppSelector((state) => state.event);
 
   useEffect(() => {
@@ -53,9 +57,13 @@ function Index() {
       }
     >
       <Image
-        source={require('@/assets/images/events-bg.jpg')}
+        source={require('@/assets/images/events-bg.png')}
         style={styles.eventImage}
       />
+      <View style={styles.rsvpCountContainer}>
+        <Ionicons name="people" size={20} color="white" />
+        <Text style={styles.rsvpCountText}>{item.rsvps?.length}</Text>
+      </View>
       <View style={styles.eventContent}>
         <Text style={styles.eventTitle}>{item.title}</Text>
         <Text style={styles.eventDescription} numberOfLines={2}>
@@ -77,16 +85,16 @@ function Index() {
 
   return (
     <View style={styles.container}>
-      {error ? (
-        <Text style={styles.noEvents}>{error}. Please try again later.</Text>
+      {error || userError ? (
+        <Text>{error?.message || userError}</Text>
       ) : events.length === 0 ? (
-        <Text style={styles.noEvents}>No events yet.</Text>
+        <Text style={styles.noEvents}>No upcoming events.</Text>
       ) : (
         <FlatList
           data={events}
-          keyExtractor={(item) => item.id.toString()}
           renderItem={renderEventCard}
           showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
           ListHeaderComponent={() => (
             <Text style={styles.heading}>All Events</Text>
@@ -96,7 +104,6 @@ function Index() {
           }
         />
       )}
-
       {user?.role === 'admin' && (
         <AnimatedFAB
           style={styles.fab}
@@ -121,97 +128,123 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F7FA',
   },
   heading: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#324C80',
-    textAlign: 'center',
     marginTop: 10,
     marginBottom: 30,
-    letterSpacing: -0.3,
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   listContainer: {
     padding: 20,
   },
   eventCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: 'hidden',
     shadowColor: '#324C80',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(50, 76, 128, 0.1)',
   },
   eventImage: {
-    height: 200,
+    height: 220,
     width: '100%',
     backgroundColor: '#f0f0f0',
   },
+  rsvpCountContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(50, 76, 128, 0.8)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  rsvpCountText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
   eventContent: {
-    padding: 16,
+    padding: 20,
   },
   eventTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#324C80',
-    marginBottom: 8,
-    letterSpacing: -0.3,
+    marginBottom: 10,
+    letterSpacing: -0.5,
   },
   eventDescription: {
     fontSize: 16,
     color: '#334155',
-    marginBottom: 12,
+    marginBottom: 16,
     lineHeight: 24,
+    opacity: 0.8,
   },
   eventMetadata: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#cfe2f3',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    backgroundColor: 'rgba(207, 226, 243, 0.5)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(50, 76, 128, 0.1)',
   },
   eventDate: {
     fontSize: 14,
-    color: '#334155',
-    marginLeft: 6,
+    color: '#324C80',
+    marginLeft: 8,
     marginRight: 16,
     fontWeight: '600',
   },
   eventLocation: {
     fontSize: 14,
-    color: '#334155',
-    marginLeft: 6,
+    color: '#324C80',
+    marginLeft: 8,
     fontWeight: '600',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginBottom: 20,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    marginTop: 10,
+    marginBottom: 16,
   },
   viewButton: {
     backgroundColor: '#324C80',
+    shadowColor: '#324C80',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-    marginLeft: 8,
+    fontWeight: '600',
+    marginLeft: 10,
   },
   noEvents: {
     fontSize: 18,
-    color: '#334155',
+    color: '#324C80',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 40,
+    fontWeight: '600',
+    opacity: 0.8,
   },
   fab: {
     position: 'absolute',
@@ -219,5 +252,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 70,
     backgroundColor: '#324C80',
+    borderRadius: 16,
+    shadowColor: '#324C80',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });
