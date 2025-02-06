@@ -57,9 +57,8 @@ function Index() {
       }
     >
       <Image
-        source={{ uri: '@/assets/images/events-bg.jpg' }}
+        source={require('@/assets/images/events-bg.jpg')}
         style={styles.eventImage}
-        defaultSource={require('@/assets/images/events-bg.jpg')}
       />
       <View style={styles.eventContent}>
         <Text style={styles.eventTitle}>{item.title}</Text>

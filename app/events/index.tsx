@@ -53,9 +53,8 @@ function Index() {
       }
     >
       <Image
-        source={{ uri: '@/assets/images/events-bg.jpg' }}
+        source={require('@/assets/images/events-bg.jpg')}
         style={styles.eventImage}
-        defaultSource={require('@/assets/images/events-bg.jpg')}
       />
       <View style={styles.eventContent}>
         <Text style={styles.eventTitle}>{item.title}</Text>
@@ -147,6 +146,7 @@ const styles = StyleSheet.create({
   eventImage: {
     height: 200,
     width: '100%',
+    backgroundColor: '#f0f0f0',
   },
   eventContent: {
     padding: 16,

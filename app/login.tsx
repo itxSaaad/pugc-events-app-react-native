@@ -41,7 +41,7 @@ export default function Login() {
         router.replace('/');
       })
       .catch(() => {
-        setError(authError || 'An error occurred');
+        setError('Invalid email or password');
       });
   };
 
@@ -58,10 +58,8 @@ export default function Login() {
         Log in to continue
       </Text>
 
-      {error ? (
-        <Text variant="bodyMedium" style={styles.errorText}>
-          {error}
-        </Text>
+      {error || authError ? (
+        <Text style={styles.errorText}>{error || authError}</Text>
       ) : null}
 
       <TextInput

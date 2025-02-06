@@ -8,7 +8,13 @@ import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
 import { Event } from '@/data/events';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { deleteEvent } from '@/store/asyncThunks/eventThunks';
+import { deleteEvent, fetchEventById } from '@/store/asyncThunks/eventThunks';
+import {
+  cancelRSVP,
+  fetchEventRSVPs,
+  fetchUserRSVPs,
+  rsvpToEvent,
+} from '@/store/asyncThunks/rsvpThunks';
 
 function EventDetails() {
   const [error, setError] = useState('');
@@ -24,6 +30,11 @@ function EventDetails() {
     error: eventError,
     loading,
   } = useAppSelector((state) => state.event);
+  const {
+    userRsvps,
+    loading: rsvpLoading,
+    error: rsvpError,
+  } = useAppSelector((state) => state.rsvp);
 
   const id =
     typeof params.id === 'string'
@@ -40,10 +51,24 @@ function EventDetails() {
       } else {
         setError('Event not found');
       }
+    } else {
+      dispatch(fetchEventById(id));
     }
   }, [events]);
 
-  if (loading || userLoading) {
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchUserRSVPs(id));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (event) {
+      dispatch(fetchEventRSVPs(event.id));
+    }
+  }, [event]);
+
+  if (loading || userLoading || rsvpLoading) {
     return <Loader />;
   }
 
@@ -74,11 +99,15 @@ function EventDetails() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {rsvpError && (
+        <Text variant="bodyMedium" style={styles.errorText}>
+          {rsvpError}
+        </Text>
+      )}
       <View style={styles.header}>
         <Image
-          source={{ uri: '@/assets/images/events-bg.jpg' }}
+          source={require('@/assets/images/events-bg.jpg')}
           style={styles.image}
-          defaultSource={require('@/assets/images/events-bg.jpg')}
         />
         <Text variant="headlineMedium" style={styles.title}>
           {event.title}
@@ -105,16 +134,37 @@ function EventDetails() {
       </View>
 
       <View style={{ padding: 16 }}>
-        <Button
-          mode="contained"
-          icon="calendar-check"
-          style={styles.rsvpButton}
-          contentStyle={styles.buttonContent}
-          textColor="white"
-          onPress={() => router.push(`/events/rsvp/${event.id}`)}
-        >
-          RSVP
-        </Button>
+        {userRsvps.find((rsvp) => rsvp.eventId === event.id) ? (
+          <Button
+            mode="contained"
+            icon="cancel"
+            onPress={() =>
+              dispatch(cancelRSVP(event.id)).then(() =>
+                dispatch(fetchUserRSVPs(event.id))
+              )
+            }
+            style={styles.rsvpButton}
+            contentStyle={styles.buttonContent}
+            textColor="white"
+          >
+            Cancel RSVP
+          </Button>
+        ) : (
+          <Button
+            mode="contained"
+            icon="check"
+            onPress={() =>
+              dispatch(rsvpToEvent(event.id)).then(() =>
+                dispatch(fetchUserRSVPs(event.id))
+              )
+            }
+            style={styles.rsvpButton}
+            contentStyle={styles.buttonContent}
+            textColor="white"
+          >
+            RSVP
+          </Button>
+        )}
       </View>
 
       {user?.role === 'admin' && event && (
@@ -181,8 +231,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   image: {
+    height: 200,
     width: '100%',
-    aspectRatio: 16 / 9,
+    backgroundColor: '#f0f0f0',
     borderRadius: 8,
     marginBottom: 16,
   },
@@ -262,9 +313,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   errorText: {
-    color: '#666',
+    color: '#FF453A',
     textAlign: 'center',
-    marginVertical: 16,
+    marginBottom: 16,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 8,
   },
   errorButton: {
     backgroundColor: '#324C80',

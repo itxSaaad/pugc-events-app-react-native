@@ -247,8 +247,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   errorText: {
-    color: 'red',
+    color: '#FF453A',
     textAlign: 'center',
     marginBottom: 16,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 8,
   },
 });
