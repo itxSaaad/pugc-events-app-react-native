@@ -3,11 +3,13 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import authReducer from './slices/authSlice';
 import eventReducer from './slices/eventSlice';
+import rsvpReducer from './slices/rsvpSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     event: eventReducer,
+    rsvp: rsvpReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
