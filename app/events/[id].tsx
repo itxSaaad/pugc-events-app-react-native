@@ -1,78 +1,64 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Chip, Text } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 
 import Loader from '@/components/Loader';
 import withAuth from '@/components/withAuth';
-import { Event } from '@/data/events';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { deleteEvent, fetchEventById } from '@/store/asyncThunks/eventThunks';
+import { fetchProfile } from '@/store/asyncThunks/authThunks';
+import {
+  deleteEvent,
+  fetchEventById,
+  fetchEvents,
+} from '@/store/asyncThunks/eventThunks';
 import {
   cancelRSVP,
-  fetchEventRSVPs,
   fetchUserRSVPs,
   rsvpToEvent,
 } from '@/store/asyncThunks/rsvpThunks';
 
 function EventDetails() {
-  const [error, setError] = useState('');
-  const [event, setEvent] = useState<Event | null>(null);
+  const [isRSVP, setIsRSVP] = useState(false);
 
   const router = useRouter();
   const params = useLocalSearchParams();
   const dispatch = useAppDispatch();
 
-  const { user, loading: userLoading } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
+  const { eventDetails, loading, error } = useAppSelector(
+    (state) => state.event
+  );
   const {
-    events,
-    error: eventError,
-    loading,
-  } = useAppSelector((state) => state.event);
-  const {
-    userRsvps,
     loading: rsvpLoading,
     error: rsvpError,
+    userRsvps,
   } = useAppSelector((state) => state.rsvp);
 
-  const id =
-    typeof params.id === 'string'
-      ? params.id
-      : Array.isArray(params.id)
-      ? params.id[0]
-      : '';
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   useEffect(() => {
-    if (events.length) {
-      const event = events.find((event) => event.id === id);
-      if (event) {
-        setEvent(event);
-      } else {
-        setError('Event not found');
-      }
-    } else {
-      dispatch(fetchEventById(id));
+    if (id) {
+      dispatch(fetchEventById(id))
+        .unwrap()
+        .then(() => {
+          dispatch(fetchUserRSVPs());
+        });
     }
-  }, [events]);
+  }, [id, dispatch]);
 
   useEffect(() => {
-    if (user) {
-      dispatch(fetchUserRSVPs(id));
+    if (userRsvps && eventDetails) {
+      setIsRSVP(userRsvps.some((rsvp) => rsvp.event_id === eventDetails.id));
     }
-  }, [user]);
+  }, [userRsvps, eventDetails, setIsRSVP]);
 
-  useEffect(() => {
-    if (event) {
-      dispatch(fetchEventRSVPs(event.id));
-    }
-  }, [event]);
-
-  if (loading || userLoading || rsvpLoading) {
+  if (loading || rsvpLoading) {
     return <Loader />;
   }
 
-  if (error || eventError || !event) {
+  if (error) {
     return (
       <View style={styles.errorContainer}>
         <Text variant="headlineLarge" style={styles.title}>
@@ -98,81 +84,16 @@ function EventDetails() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {rsvpError && (
-        <Text variant="bodyMedium" style={styles.errorText}>
-          {rsvpError}
-        </Text>
-      )}
-      <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/events-bg.jpg')}
-          style={styles.image}
-        />
-        <Text variant="headlineMedium" style={styles.title}>
-          {event.title}
-        </Text>
-        <Chip
-          icon="calendar"
-          style={styles.dateChip}
-          textStyle={{ color: '#fff' }}
-        >
-          {new Date(event.date).toLocaleDateString()}
-        </Chip>
-      </View>
-
-      <View style={styles.content}>
-        <Text variant="bodyLarge" style={styles.description}>
-          {event.description}
-        </Text>
-
-        <View style={styles.infoSection}>
-          <InfoItem icon="domain" label="Department" value={event.department} />
-          <InfoItem icon="map-marker" label="Location" value={event.location} />
-          <InfoItem icon="clock-outline" label="Time" value={event.time} />
-        </View>
-      </View>
-
-      <View style={{ padding: 16 }}>
-        {userRsvps.find((rsvp) => rsvp.eventId === event.id) ? (
-          <Button
-            mode="contained"
-            icon="cancel"
-            onPress={() =>
-              dispatch(cancelRSVP(event.id)).then(() =>
-                dispatch(fetchUserRSVPs(event.id))
-              )
-            }
-            style={styles.rsvpButton}
-            contentStyle={styles.buttonContent}
-            textColor="white"
-          >
-            Cancel RSVP
-          </Button>
-        ) : (
-          <Button
-            mode="contained"
-            icon="check"
-            onPress={() =>
-              dispatch(rsvpToEvent(event.id)).then(() =>
-                dispatch(fetchUserRSVPs(event.id))
-              )
-            }
-            style={styles.rsvpButton}
-            contentStyle={styles.buttonContent}
-            textColor="white"
-          >
-            RSVP
-          </Button>
-        )}
-      </View>
-
-      {user?.role === 'admin' && event && (
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {user?.role === 'admin' && eventDetails && (
         <View style={styles.actions}>
           <Button
             mode="contained"
             icon="pencil"
-            onPress={() => router.push(`/events/edit/${event.id}`)}
+            onPress={() => router.push(`/events/edit/${eventDetails.id}`)}
             style={styles.editButton}
             contentStyle={styles.buttonContent}
             textColor="white"
@@ -183,7 +104,9 @@ function EventDetails() {
             mode="contained"
             icon="delete"
             onPress={() =>
-              dispatch(deleteEvent(event.id)).then(() => router.push('/events'))
+              dispatch(deleteEvent(eventDetails.id)).then(() =>
+                router.push('/events')
+              )
             }
             style={styles.deleteButton}
             contentStyle={styles.buttonContent}
@@ -192,6 +115,91 @@ function EventDetails() {
             Delete Event
           </Button>
         </View>
+      )}
+
+      {(error || rsvpError) && (
+        <Text style={styles.errorText}>{error || rsvpError}</Text>
+      )}
+
+      {eventDetails && (
+        <>
+          <View style={styles.header}>
+            <Image
+              source={require('@/assets/images/events-bg.png')}
+              style={styles.image}
+            />
+            <Text variant="headlineMedium" style={styles.title}>
+              {eventDetails.title}
+            </Text>
+            <View style={styles.chipContainer}>
+              <View style={styles.dateChip}>
+                <Ionicons name="calendar" size={16} color="#324C80" />
+                <Text style={styles.dateChipText}>
+                  {new Date(eventDetails.date).toLocaleDateString()}
+                </Text>
+              </View>
+              <View style={styles.dateChip}>
+                <Ionicons name="people" size={16} color="#324C80" />
+                <Text style={styles.dateChipText}>
+                  {eventDetails.rsvps.length} Attendees
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <Text variant="bodyLarge" style={styles.description}>
+              {eventDetails.description}
+            </Text>
+
+            <View style={styles.infoSection}>
+              <InfoItem
+                icon="business"
+                label="Department"
+                value={eventDetails.department}
+              />
+              <InfoItem
+                icon="location"
+                label="Location"
+                value={eventDetails.location}
+              />
+              <InfoItem icon="time" label="Time" value={eventDetails.time} />
+            </View>
+          </View>
+
+          <Button
+            mode="contained"
+            icon={isRSVP ? 'calendar-remove' : 'calendar-check'}
+            onPress={() => {
+              if (isRSVP) {
+                dispatch(cancelRSVP(eventDetails.id)).then(() =>
+                  dispatch(fetchEventById(eventDetails.id)).then(() =>
+                    dispatch(fetchUserRSVPs()).then(() =>
+                      dispatch(fetchEvents()).then(() =>
+                        dispatch(fetchProfile())
+                      )
+                    )
+                  )
+                );
+              } else {
+                dispatch(rsvpToEvent(eventDetails.id)).then(() =>
+                  dispatch(fetchEventById(eventDetails.id)).then(() =>
+                    dispatch(fetchUserRSVPs()).then(() =>
+                      dispatch(fetchEvents()).then(() =>
+                        dispatch(fetchProfile())
+                      )
+                    )
+                  )
+                );
+              }
+            }}
+            style={styles.rsvpButton}
+            contentStyle={styles.buttonContent}
+            textColor="white"
+          >
+            {isRSVP ? 'Cancel RSVP' : 'RSVP'}
+          </Button>
+        </>
       )}
     </ScrollView>
   );
@@ -204,12 +212,16 @@ const InfoItem = ({
   label,
   value,
 }: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: string;
   label: string;
   value: string;
 }) => (
   <View style={styles.infoItem}>
-    <MaterialCommunityIcons name={icon} size={24} color="#666" />
+    <Ionicons
+      name={icon as keyof typeof Ionicons.glyphMap}
+      size={24}
+      color="#324C80"
+    />
     <View style={styles.infoTextContainer}>
       <Text variant="labelMedium" style={styles.infoLabel}>
         {label}
@@ -225,10 +237,10 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: '#F5F7FA',
+    padding: 22,
   },
   header: {
-    padding: 16,
-    backgroundColor: '#fff',
+    marginBottom: 16,
   },
   image: {
     height: 200,
@@ -247,13 +259,24 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 8,
   },
-  dateChip: {
-    backgroundColor: '#324C80',
-    alignSelf: 'flex-start',
+  chipContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
     marginTop: 8,
   },
-  content: {
-    padding: 16,
+  dateChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(207, 226, 243, 0.5)',
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(50, 76, 128, 0.1)',
+  },
+  dateChipText: {
+    marginLeft: 8,
+    color: '#324C80',
   },
   description: {
     color: '#4a4a4a',
@@ -261,14 +284,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoSection: {
-    gap: 16,
+    marginBottom: 16,
   },
   infoItem: {
-    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: 'rgba(207, 226, 243, 0.5)',
     padding: 12,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(50, 76, 128, 0.1)',
   },
   infoTextContainer: {
     marginLeft: 12,
@@ -281,11 +307,9 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   actions: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 24,
   },
   rsvpButton: {
     backgroundColor: '#324C80',
