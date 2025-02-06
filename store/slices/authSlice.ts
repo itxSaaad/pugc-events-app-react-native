@@ -15,21 +15,43 @@ type AuthState = {
     name: string;
     role: string;
   } | null;
+  userDetails: {
+    email: string;
+    name: string;
+    role: string;
+    rsvps: any[];
+  } | null;
   authToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  message: string | null;
   error: string | null;
 };
 
 const initialState: AuthState = {
   user: null,
+  userDetails: null,
   authToken: null,
   isAuthenticated: false,
   loading: false,
-  message: null,
   error: null,
 };
+
+(async function () {
+  try {
+    const authToken = await getDataFromAsyncStorage('authToken');
+    const user = await getDataFromAsyncStorage('user');
+
+    return {
+      authToken,
+      user,
+      isAuthenticated: !!authToken,
+    };
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : 'Error initializing auth state'
+    );
+  }
+})();
 
 async function saveDataToAsyncStorage(key: string, data: any) {
   try {
@@ -73,21 +95,10 @@ async function clearAsyncStorage(key: string) {
   }
 }
 
-(async () => {
-  const user = await getDataFromAsyncStorage('user');
-  const authToken = await getDataFromAsyncStorage('authToken');
-  initialState.user = user;
-  initialState.authToken = authToken;
-})();
-
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    clearMessage: (state) => {
-      state.message = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(registerUser.pending, (state) => {
@@ -126,11 +137,13 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
-        state.user = action.payload.data.user;
+        state.userDetails = action.payload.data.data.user;
         state.loading = false;
+        state.error = null;
       })
-      .addCase(fetchProfile.rejected, (state) => {
+      .addCase(fetchProfile.rejected, (state, action: any) => {
         state.loading = false;
+        state.error = action.payload?.message;
       })
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
@@ -148,7 +161,5 @@ const authSlice = createSlice({
       });
   },
 });
-
-export const { clearMessage } = authSlice.actions;
 
 export default authSlice.reducer;

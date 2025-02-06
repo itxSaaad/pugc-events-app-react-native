@@ -9,8 +9,9 @@ import {
 
 type RSVP = {
   id: string;
-  eventId: string;
-  userId: string;
+  event_id: string;
+  user_id: string;
+  status: boolean;
   createdAt: string;
 };
 
@@ -67,8 +68,7 @@ const rsvpSlice = createSlice({
       .addCase(rsvpToEvent.pending, (state) => {
         state.loading = true;
       })
-      .addCase(rsvpToEvent.fulfilled, (state, action) => {
-        state.userRsvps.push(action.payload.data.data.rsvp);
+      .addCase(rsvpToEvent.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
       })
@@ -79,10 +79,7 @@ const rsvpSlice = createSlice({
       .addCase(cancelRSVP.pending, (state) => {
         state.loading = true;
       })
-      .addCase(cancelRSVP.fulfilled, (state, action) => {
-        state.userRsvps = state.userRsvps.filter(
-          (rsvp) => rsvp.id !== action.payload.data.data.rsvp.id
-        );
+      .addCase(cancelRSVP.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
       })

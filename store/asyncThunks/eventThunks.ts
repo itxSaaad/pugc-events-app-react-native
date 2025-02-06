@@ -16,9 +16,8 @@ export const fetchEvents = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -28,12 +27,15 @@ export const fetchEvents = createAsyncThunk(
           Authorization: `Bearer ${authToken}`,
         },
       });
+
       return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -46,9 +48,8 @@ export const fetchEventById = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -62,9 +63,11 @@ export const fetchEventById = createAsyncThunk(
       return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -77,9 +80,8 @@ export const createEvent = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -90,13 +92,16 @@ export const createEvent = createAsyncThunk(
           'Content-Type': 'application/json',
         },
       });
+
       return response;
     } catch (error: any) {
       console.log(error);
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -112,9 +117,8 @@ export const updateEvent = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -129,12 +133,15 @@ export const updateEvent = createAsyncThunk(
           },
         }
       );
+
       return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -147,9 +154,8 @@ export const deleteEvent = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -159,12 +165,15 @@ export const deleteEvent = createAsyncThunk(
           Authorization: `Bearer ${authToken}`,
         },
       });
+
       return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }

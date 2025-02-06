@@ -5,30 +5,29 @@ const API_URL = 'https://chief-mistakenly-husky.ngrok-free.app';
 
 export const fetchUserRSVPs = createAsyncThunk(
   'rsvp/fetchUserRSVPs',
-  async (eventId: string, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue, getState }) => {
     const { authToken } = (getState() as any).auth;
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
     try {
-      const response = await axios.get(
-        `${API_URL}/api/events/${eventId}/user/rsvp`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        }
-      );
-      return response.data;
+      const response = await axios.get(`${API_URL}/api/events/user/rsvp`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -41,9 +40,8 @@ export const fetchEventRSVPs = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -54,12 +52,15 @@ export const fetchEventRSVPs = createAsyncThunk(
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-      return response.data;
+
+      return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -72,9 +73,8 @@ export const rsvpToEvent = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -86,12 +86,15 @@ export const rsvpToEvent = createAsyncThunk(
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-      return response.data;
+
+      return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }
@@ -104,9 +107,8 @@ export const cancelRSVP = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -117,12 +119,15 @@ export const cancelRSVP = createAsyncThunk(
           headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-      return response.data;
+
+      return response;
     } catch (error: any) {
       return rejectWithValue({
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        data: error.response?.data?.data || null,
+        status: error.response && error.response.status,
+        message:
+          error.response && error.response.message
+            ? error.response.message
+            : error.message,
       });
     }
   }

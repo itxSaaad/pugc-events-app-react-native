@@ -37,18 +37,15 @@ export const registerUser = createAsyncThunk(
         },
         config
       );
+
       return response;
     } catch (error: any) {
       return rejectWithValue({
         status: error.response && error.response.status,
         message:
-          error.response && error.response.data.message
-            ? error.response.data.message
+          error.response && error.response.message
+            ? error.response.message
             : error.message,
-        data:
-          error.response && error.response.data.data
-            ? error.response.data.data
-            : null,
       });
     }
   }
@@ -72,13 +69,9 @@ export const loginUser = createAsyncThunk(
       return rejectWithValue({
         status: error.response && error.response.status,
         message:
-          error.response && error.response.data.message
-            ? error.response.data.message
+          error.response && error.response.message
+            ? error.response.message
             : error.message,
-        data:
-          error.response && error.response.data.data
-            ? error.response.data.data
-            : null,
       });
     }
   }
@@ -92,9 +85,8 @@ export const logoutUser = createAsyncThunk(
 
       if (!authToken) {
         return rejectWithValue({
-          status: 401,
-          message: 'Unauthorized, please login again',
-          data: null,
+          status: 400,
+          message: 'User is not logged in',
         });
       }
 
@@ -113,13 +105,9 @@ export const logoutUser = createAsyncThunk(
       return rejectWithValue({
         status: error.response && error.response.status,
         message:
-          error.response && error.response.data.message
-            ? error.response.data.message
+          error.response && error.response.message
+            ? error.response.message
             : error.message,
-        data:
-          error.response && error.response.data.data
-            ? error.response.data.data
-            : null,
       });
     }
   }
@@ -132,9 +120,8 @@ export const fetchProfile = createAsyncThunk(
 
     if (!authToken) {
       return rejectWithValue({
-        status: 401,
-        message: 'Unauthorized, please login again',
-        data: null,
+        status: 400,
+        message: 'User is not logged in',
       });
     }
 
@@ -150,13 +137,9 @@ export const fetchProfile = createAsyncThunk(
       return rejectWithValue({
         status: error.response && error.response.status,
         message:
-          error.response && error.response.data.message
-            ? error.response.data.message
+          error.response && error.response.message
+            ? error.response.message
             : error.message,
-        data:
-          error.response && error.response.data.data
-            ? error.response.data.data
-            : null,
       });
     }
   }
