@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "pugc-events-app-react-native",
-    "slug": "pugc-events-app-react-native",
+    "name": "PUGC Events",
+    "slug": "pugc-events",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pugc.events"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.pugc.events"
     },
     "web": {
       "bundler": "metro",
