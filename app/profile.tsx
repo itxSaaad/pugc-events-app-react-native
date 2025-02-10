@@ -65,7 +65,7 @@ function Profile() {
         <Avatar.Image
           size={150}
           source={{
-            uri: `https://ui-avatars.com/api/?name=${user?.name}&background=324C80&color=fff`,
+            uri: `https://ui-avatars.com/api/?name=${userDetails?.name}&background=324C80&color=fff`,
           }}
           style={styles.avatar}
           accessibilityLabel="User Avatar"

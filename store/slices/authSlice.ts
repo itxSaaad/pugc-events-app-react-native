@@ -40,11 +40,15 @@ const initialState: AuthState = {
   try {
     const authToken = await getDataFromAsyncStorage('authToken');
     const user = await getDataFromAsyncStorage('user');
+    const userDetails = await getDataFromAsyncStorage('userDetails');
 
     return {
-      authToken,
       user,
+      userDetails,
+      authToken,
       isAuthenticated: !!authToken,
+      loading: false,
+      error: null,
     };
   } catch (error) {
     throw new Error(
@@ -123,6 +127,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action: any) => {
         state.user = action.payload.data.data.user;
         state.authToken = action.payload.data.data.token;
+        console.log('Auth Token From Slice:', action.payload.data.data.token);
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
@@ -140,6 +145,8 @@ const authSlice = createSlice({
         state.userDetails = action.payload.data.data.user;
         state.loading = false;
         state.error = null;
+        console.log('User Details From Slice:', action.payload.data.data.user);
+        saveDataToAsyncStorage('userDetails', action.payload.data.data.user);
       })
       .addCase(fetchProfile.rejected, (state, action: any) => {
         state.loading = false;
@@ -155,6 +162,7 @@ const authSlice = createSlice({
         state.loading = false;
         clearAsyncStorage('authToken');
         clearAsyncStorage('user');
+        clearAsyncStorage('userDetails');
       })
       .addCase(logoutUser.rejected, (state) => {
         state.loading = false;

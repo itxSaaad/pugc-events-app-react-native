@@ -108,13 +108,22 @@ PUGC Events is a React Native mobile app built with Expo. The app provides an in
    npm install
    ```
 
-3. Start the Expo server
+3. Create a `.env` file in the root directory and add the following environment variables:
+
+   ```sh
+   EXPO_PUBLIC_API_URL=<your-api-url>
+   EXPO_ENV=development
+   ```
+
+   Replace the `<your-api-url>` with the URL of your Laravel API server.
+
+4. Start the Expo server
 
    ```sh
    npx expo start
    ```
 
-4. Open the Expo Go app on your mobile device and scan the QR code to run the app.
+5. Open the Expo Go app on your mobile device and scan the QR code to run the app.
 
 ## Roadmap
 

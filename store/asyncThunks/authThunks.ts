@@ -1,7 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'https://chief-mistakenly-husky.ngrok-free.app';
+const API_URL = process.env.EXPO_PUBLIC_API_URL
+  ? process.env.EXPO_PUBLIC_API_URL
+  : 'http://localhost:8000';
 
 const config = {
   headers: {
@@ -117,6 +119,8 @@ export const fetchProfile = createAsyncThunk(
   'auth/fetchProfile',
   async (_, { rejectWithValue, getState }) => {
     const { authToken } = (getState() as any).auth;
+
+    console.log('Auth token from Thunk: ', authToken);
 
     if (!authToken) {
       return rejectWithValue({
